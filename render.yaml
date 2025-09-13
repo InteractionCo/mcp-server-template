@@ -9,3 +9,15 @@ services:
     envVars:
       - key: ENVIRONMENT
         value: production
+      - key: SERVER_NAME
+        value: MCP Terragon Bridge
+      - key: TERRAGON_BASE_URL
+        sync: false
+      - key: TERRAGON_PROVIDER
+        value: anthropic
+      - key: TERRAGON_MODEL
+        value: claude-3-7-sonnet-2025-02-19
+      - key: TERRAGON_API_KEY
+        sync: false
+      - key: TERRAGON_POKE_SECRET
+        sync: false
