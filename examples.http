@@ -1,0 +1,21 @@
+### Health check
+GET http://localhost:8000/healthz
+
+### Poke config
+GET http://localhost:8000/poke
+
+### Spawn agent via Poke (replace values)
+POST http://localhost:8000/poke
+Content-Type: application/json
+X-Poke-Secret: super-secret
+
+{
+  "instruction": "Create a README explaining how to run tests in this project",
+  "workspaceDir": "/tmp/agent-work",
+  "settings": {
+    "provider": "anthropic",
+    "apiKey": "sk-replace",
+    "model": "claude-3-7-sonnet-2025-02-19"
+  }
+}
+
