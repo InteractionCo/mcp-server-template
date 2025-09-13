@@ -13,15 +13,17 @@ Fork the repo, then run:
 ```bash
 git clone <your-repo-url>
 cd mcp-server-template
+```
+## Manual Install (if not uv) (sad!)
+```bash
 conda create -n mcp-server python=3.13
 conda activate mcp-server
 pip install -r requirements.txt
 ```
 
-### Test
-
+### Test (with uv)
 ```bash
-python src/server.py
+uv run src/server.py # `python` instead of `uv run` if no uv
 # then in another terminal run:
 npx @modelcontextprotocol/inspector
 ```

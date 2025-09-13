@@ -214,3 +214,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Mac OS
+.DS_Store
+
+# uv (ignore lock for now)
+uv.lock
