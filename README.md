@@ -10,10 +10,12 @@
 
 ## Features
 
-- 🚀 **Proactive notifications** - Real-time GitHub events pushed to Poke (no polling!)
-- 📝 **Rich context** - Detailed commit diffs, PR info, issue details
-- ⚙️ **Configurable** - Toggle diff content inclusion via environment variables
-- 🌿 **Comprehensive events** - Supports push, PRs, issues, branches, tags
+- 🚀 **Proactive notifications** - Delivers real-time GitHub events to Poke (no polling!)
+- 📝 **Rich context** - Provides detailed commit diffs, PR info, and issue details
+- 🔍 **Code search** - Searches code within your connected repository
+- 📄 **File access** - Retrieves and reads specific files from your repo
+- ⚙️ **Configurable** - Toggles diff content inclusion via environment variables
+- 🌿 **Comprehensive events** - Supports push, PRs, issues, branches, and tags
 
 ## Poke Setup
 
@@ -45,6 +47,24 @@ Can you remember these preferences for future GitHub notifications?"
 This helps Poke learn what's important to you and avoid notification fatigue.
 
 ![GitHub-Poke Bridge Example](/assets/example.png)
+
+## Code Search Capabilities
+
+The MCP server includes code search tools that work with your connected repository:
+
+- **`search_code`** - Searches for code patterns, functions, or text within your repository
+- **`get_file_content`** - Retrieves the full content of any file in your repository
+- **`get_repository_info`** - Gets basic information and stats about your repository
+
+### Example Usage with Poke
+
+Ask Poke questions like:
+- "Search for all functions that contain 'webhook' in our repo"
+- "Show me the content of the server.py file"
+- "Find all files that import 'requests'"
+- "Search for TODO comments in Python files"
+
+The search is scoped to your specific repository (configured via environment variables), making it perfect for repo-specific code exploration and assistance.
 
 ## Local Development
 
@@ -82,6 +102,10 @@ POKE_API_KEY=your-poke-api-key-here
 POKE_API_URL=https://poke.com/api/v1/inbound-sms/webhook
 GITHUB_TOKEN=your-github-personal-access-token
 
+# Repository Configuration (for code search functionality)
+GITHUB_REPO_OWNER=your-github-username-or-org
+GITHUB_REPO_NAME=your-repository-name
+
 # Optional
 INCLUDE_DIFF_CONTENT=true  # Include actual code changes in notifications
 GITHUB_WEBHOOK_SECRET=your-secret  # For webhook security (recommended)
@@ -112,14 +136,6 @@ Click the "Deploy to Render" button above.
 5. Render will automatically detect the `render.yaml` configuration
 
 Your server will be available at `https://your-service-name.onrender.com/mcp` (NOTE THE `/mcp`!)
-
-## Poke Setup
-
-You can connect your MCP server to Poke at (poke.com/settings/connections)[poke.com/settings/connections].
-To test the connection explitly, ask poke somethink like `Tell the subagent to use the "{connection name}" integration's "{tool name}" tool`.
-If you run into persistent issues of poke not calling the right MCP (e.g. after you've renamed the connection) you may send `clearhistory` to poke to delete all message history and start fresh.
-We're working hard on improving the integration use of Poke :)
-
 
 ## Customization
 
