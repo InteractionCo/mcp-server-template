@@ -217,3 +217,4 @@ __marimo__/
 
 # Planning directory
 planning/
+.DS_Store
