@@ -117,6 +117,7 @@ Your server will be available at `https://your-service-name.onrender.com/mcp` (N
 
 You can connect your MCP server to Poke at (poke.com/settings/connections)[poke.com/settings/connections].
 To test the connection explitly, ask poke somethink like `Tell the subagent to use the "{connection name}" integration's "{tool name}" tool`.
+If you run into persistent issues of poke not calling the right MCP (e.g. after you've renamed the connection) you may send `clearhistory` to poke to delete all message history and start fresh.
 We're working hard on improving the integration use of Poke :)
 
 
