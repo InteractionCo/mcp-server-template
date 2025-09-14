@@ -1,6 +1,6 @@
-# MCP Server Template
+# GitHub-Poke Bridge
 
-A minimal [FastMCP](https://github.com/jlowin/fastmcp) server template for Render deployment with streamable HTTP transport.
+A proactive GitHub webhook-to-Poke notification bridge using [FastMCP](https://github.com/jlowin/fastmcp) for real-time repository event forwarding.
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/InteractionCo/mcp-server-template)
 

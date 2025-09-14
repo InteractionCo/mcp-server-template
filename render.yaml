@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: fastmcp-server
+    name: github-poke-bridge
     runtime: python
     buildCommand: pip install -r requirements.txt
     startCommand: python src/server.py
