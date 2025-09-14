@@ -28,10 +28,14 @@ class WebhookHandlers:
         if commits:
             latest_commit = commits[-1]
             commit_sha = latest_commit.get("id", "")
-            commit_details = self.github.get_commit_details(repo_owner, repo_name, commit_sha)
+            commit_details = self.github.get_commit_details(
+                repo_owner, repo_name, commit_sha
+            )
 
             if commit_details:
-                include_diff = os.environ.get("INCLUDE_DIFF_CONTENT", "false").lower() == "true"
+                include_diff = (
+                    os.environ.get("INCLUDE_DIFF_CONTENT", "false").lower() == "true"
+                )
 
                 message = f"""🚀 {commit_count} new commit{'s' if commit_count != 1 else ''} pushed to {repo_name} by {pusher}
 
@@ -41,7 +45,9 @@ Files changed: {commit_details.get('files_changed', 0)} (+{commit_details.get('a
 Modified files: {', '.join(commit_details.get('files', []))}"""
 
                 if include_diff:
-                    diff_content = self.github.get_commit_diff(repo_owner, repo_name, commit_sha)
+                    diff_content = self.github.get_commit_diff(
+                        repo_owner, repo_name, commit_sha
+                    )
                     if diff_content:
                         message += f"\n\nChanges:\n```\n{diff_content}\n```"
 
@@ -64,11 +70,13 @@ Modified files: {', '.join(commit_details.get('files', []))}"""
         pr_title = pr_data.get("title", "")
         pr_user = pr_data.get("user", {}).get("login", "someone")
 
-        pr_details = self.github.get_pull_request_details(repo_owner, repo_name, pr_number)
+        pr_details = self.github.get_pull_request_details(
+            repo_owner, repo_name, pr_number
+        )
 
         if pr_details:
-            body = pr_details.get('body', '')
-            body_preview = body[:200] + '...' if body else 'No description'
+            body = pr_details.get("body", "")
+            body_preview = body[:200] + "..." if body else "No description"
 
             return f"""📝 PR #{pr_number} {action} in {repo_name} by {pr_user}
 
@@ -81,7 +89,9 @@ State: {pr_details.get('state', 'unknown')}
 
 View PR: {pr_details.get('url', '')}"""
         else:
-            return f"📝 PR #{pr_number} {action} in {repo_name} by {pr_user}: {pr_title}"
+            return (
+                f"📝 PR #{pr_number} {action} in {repo_name} by {pr_user}: {pr_title}"
+            )
 
     def handle_issues(self, payload: Dict[str, Any]) -> str:
         """Handle issue events"""
@@ -95,13 +105,17 @@ View PR: {pr_details.get('url', '')}"""
         issue_title = issue_data.get("title", "")
         issue_user = issue_data.get("user", {}).get("login", "someone")
 
-        issue_details = self.github.get_issue_details(repo_owner, repo_name, issue_number)
+        issue_details = self.github.get_issue_details(
+            repo_owner, repo_name, issue_number
+        )
 
         if issue_details:
-            labels_str = ", ".join(issue_details.get('labels', [])) or "None"
-            assignees_str = ", ".join(issue_details.get('assignees', [])) or "Unassigned"
-            body = issue_details.get('body', '')
-            body_preview = body[:200] + '...' if body else 'No description'
+            labels_str = ", ".join(issue_details.get("labels", [])) or "None"
+            assignees_str = (
+                ", ".join(issue_details.get("assignees", [])) or "Unassigned"
+            )
+            body = issue_details.get("body", "")
+            body_preview = body[:200] + "..." if body else "No description"
 
             return f"""🐛 Issue #{issue_number} {action} in {repo_name} by {issue_user}
 

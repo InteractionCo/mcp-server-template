@@ -28,9 +28,9 @@ class PokeClient:
                 self.api_url,
                 headers={
                     "Authorization": f"Bearer {self.api_key}",
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
                 },
-                json={"message": message}
+                json={"message": message},
             )
             return response.status_code == 200
         except Exception as e:
@@ -50,15 +50,15 @@ class PokeClient:
                 self.api_url,
                 headers={
                     "Authorization": f"Bearer {self.api_key}",
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
                 },
-                json={"message": test_message}
+                json={"message": test_message},
             )
 
             return {
                 "success": True,
                 "status_code": response.status_code,
-                "response": response.json() if response.content else "No content"
+                "response": response.json() if response.content else "No content",
             }
         except Exception as e:
             return {"error": f"Failed to send message: {str(e)}"}
