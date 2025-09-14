@@ -1,5 +1,5 @@
 <div align="center">
-  <img width="270" height="270" src="/assets/logo.png" alt="GitHub-Poke Bridge Logo">
+  <img width="120" height="120" src="/assets/logo.png" alt="GitHub-Poke Bridge Logo">
   <h1><b>GitHub-Poke Bridge</b></h1>
   <p>
     A proactive GitHub webhook-to-Poke notification bridge using <a href="https://github.com/jlowin/fastmcp">FastMCP</a> for real-time repository event forwarding.
