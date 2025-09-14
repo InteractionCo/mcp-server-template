@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
+
 def test_poke_api():
     api_key = os.environ.get("POKE_API_KEY")
     api_url = os.environ.get("POKE_API_URL")
@@ -23,9 +24,11 @@ def test_poke_api():
             api_url,
             headers={
                 "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
             },
-            json={"message": "🚀 Hello from GitHub-Poke Bridge test! This is working!"}
+            json={
+                "message": "🚀 Hello from GitHub-Poke Bridge test! This is STILL working, right?"
+            },
         )
 
         print(f"Status Code: {response.status_code}")
@@ -38,6 +41,7 @@ def test_poke_api():
 
     except Exception as e:
         print(f"❌ ERROR: {str(e)}")
+
 
 if __name__ == "__main__":
     test_poke_api()
