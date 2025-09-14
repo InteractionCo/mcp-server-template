@@ -42,6 +42,164 @@ def get_server_info() -> dict:
         "python_version": os.sys.version.split()[0]
     }
 
+# Add a comment to an issue
+@mcp.tool(description="Add a comment to a GitHub issue")
+def add_issue_comment(owner: str, repo: str, issue_number: int, comment: str) -> dict:
+    """
+    Add a comment to a GitHub issue.
+    Returns success/error status and response details.
+    """
+    try:
+        headers = get_github_api_headers()
+        url = f"https://api.github.com/repos/{owner}/{repo}/issues/{issue_number}/comments"
+
+        response = requests.post(
+            url,
+            headers=headers,
+            json={"body": comment}
+        )
+
+        if response.status_code == 201:
+            return {
+                "success": True,
+                "message": "Comment added successfully",
+                "comment_url": response.json().get("html_url", "")
+            }
+        else:
+            return {
+                "success": False,
+                "error": f"Failed to add comment: {response.status_code} - {response.text}"
+            }
+    except Exception as e:
+        return {"success": False, "error": f"Exception: {str(e)}"}
+
+# Add a comment to a pull request
+@mcp.tool(description="Add a comment to a GitHub pull request")
+def add_pr_comment(owner: str, repo: str, pr_number: int, comment: str) -> dict:
+    """
+    Add a comment to a GitHub pull request.
+    Returns success/error status and response details.
+    """
+    try:
+        headers = get_github_api_headers()
+        url = f"https://api.github.com/repos/{owner}/{repo}/issues/{pr_number}/comments"
+
+        response = requests.post(
+            url,
+            headers=headers,
+            json={"body": comment}
+        )
+
+        if response.status_code == 201:
+            return {
+                "success": True,
+                "message": "PR comment added successfully",
+                "comment_url": response.json().get("html_url", "")
+            }
+        else:
+            return {
+                "success": False,
+                "error": f"Failed to add PR comment: {response.status_code} - {response.text}"
+            }
+    except Exception as e:
+        return {"success": False, "error": f"Exception: {str(e)}"}
+
+# Close an issue
+@mcp.tool(description="Close a GitHub issue")
+def close_issue(owner: str, repo: str, issue_number: int, comment: str = None) -> dict:
+    """
+    Close a GitHub issue, optionally with a closing comment.
+    Returns success/error status and response details.
+    """
+    try:
+        headers = get_github_api_headers()
+
+        # Add comment if provided
+        if comment:
+            add_issue_comment(owner, repo, issue_number, comment)
+
+        # Close the issue
+        url = f"https://api.github.com/repos/{owner}/{repo}/issues/{issue_number}"
+        response = requests.patch(
+            url,
+            headers=headers,
+            json={"state": "closed"}
+        )
+
+        if response.status_code == 200:
+            return {
+                "success": True,
+                "message": "Issue closed successfully",
+                "issue_url": response.json().get("html_url", "")
+            }
+        else:
+            return {
+                "success": False,
+                "error": f"Failed to close issue: {response.status_code} - {response.text}"
+            }
+    except Exception as e:
+        return {"success": False, "error": f"Exception: {str(e)}"}
+
+# Add labels to an issue
+@mcp.tool(description="Add labels to a GitHub issue")
+def add_issue_labels(owner: str, repo: str, issue_number: int, labels: list) -> dict:
+    """
+    Add labels to a GitHub issue.
+    Returns success/error status and response details.
+    """
+    try:
+        headers = get_github_api_headers()
+        url = f"https://api.github.com/repos/{owner}/{repo}/issues/{issue_number}/labels"
+
+        response = requests.post(
+            url,
+            headers=headers,
+            json=labels
+        )
+
+        if response.status_code == 200:
+            return {
+                "success": True,
+                "message": f"Labels {labels} added successfully"
+            }
+        else:
+            return {
+                "success": False,
+                "error": f"Failed to add labels: {response.status_code} - {response.text}"
+            }
+    except Exception as e:
+        return {"success": False, "error": f"Exception: {str(e)}"}
+
+# Assign someone to an issue
+@mcp.tool(description="Assign a user to a GitHub issue")
+def assign_issue(owner: str, repo: str, issue_number: int, assignee: str) -> dict:
+    """
+    Assign a user to a GitHub issue.
+    Returns success/error status and response details.
+    """
+    try:
+        headers = get_github_api_headers()
+        url = f"https://api.github.com/repos/{owner}/{repo}/issues/{issue_number}/assignees"
+
+        response = requests.post(
+            url,
+            headers=headers,
+            json={"assignees": [assignee]}
+        )
+
+        if response.status_code == 201:
+            return {
+                "success": True,
+                "message": f"Issue assigned to {assignee} successfully"
+            }
+        else:
+            return {
+                "success": False,
+                "error": f"Failed to assign issue: {response.status_code} - {response.text}"
+            }
+    except Exception as e:
+        return {"success": False, "error": f"Exception: {str(e)}"}
+
 # Test function to manually send messages to Poke API
 @mcp.tool(description="Send a test message to Poke API to verify connectivity")
 def test_poke_message(message: str) -> dict:
