@@ -24,6 +24,17 @@ You can connect your deployed MCP server to Poke at [poke.com/settings/connectio
 **Server URL:** `https://your-app.onrender.com/mcp`
 **Transport:** Streamable HTTP
 
+### ⚠️ Authentication Note
+
+**This MCP server currently runs without full authentication.**
+
+## Possible Enhancements
+
+- Authentication support (OAuth, API keys)
+- Rate limiting for API endpoints
+- Additional GitHub event types
+- Enhanced error logging and monitoring
+
 To test the MCP connection, ask Poke something like:
 `"Tell the subagent to use the 'GitHub-Poke Bridge' integration's 'test_poke_message' tool"`
 
