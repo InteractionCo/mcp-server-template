@@ -46,6 +46,13 @@ Click the "Deploy to Render" button above.
 
 Your server will be available at `https://your-service-name.onrender.com/mcp` (NOTE THE `/mcp`!)
 
+## Poke Setup
+
+You can connect your MCP server to Poke at (poke.com/settings/connections)[poke.com/settings/connections].
+To test the connection explitly, ask poke somethink like `Tell the subagent to use the "{connection name}" integration's "{tool name}" tool`.
+We're working hard on improving the integration use of Poke :)
+
+
 ## Customization
 
 Add more tools by decorating functions with `@mcp.tool`:
