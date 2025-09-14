@@ -1,5 +1,5 @@
 <div align="center">
-  <img width="270" height="270" src="/assets/example.png" alt="GitHub-Poke Bridge Logo">
+  <img width="270" height="270" src="/assets/logo.png" alt="GitHub-Poke Bridge Logo">
   <h1><b>GitHub-Poke Bridge</b></h1>
   <p>
     A proactive GitHub webhook-to-Poke notification bridge using <a href="https://github.com/jlowin/fastmcp">FastMCP</a> for real-time repository event forwarding.
@@ -43,6 +43,8 @@ Can you remember these preferences for future GitHub notifications?"
 ```
 
 This helps Poke learn what's important to you and avoid notification fatigue.
+
+![GitHub-Poke Bridge Example](/assets/example.png)
 
 ## Local Development
 
