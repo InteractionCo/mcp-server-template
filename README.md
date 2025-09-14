@@ -27,7 +27,7 @@ python src/server.py
 # then in another terminal run:
 npx @modelcontextprotocol/inspector
 ```
-
+test
 Open http://localhost:3000 and connect to `http://localhost:8000/mcp` using "Streamable HTTP" transport (NOTE THE `/mcp`!).
 
 ## Deployment
