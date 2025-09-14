@@ -11,10 +11,10 @@ from fastmcp import FastMCP
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
-from .security import validate_github_signature
-from .github_client import GitHubClient
-from .poke_client import PokeClient
-from .webhook_handlers import WebhookHandlers
+from security import validate_github_signature
+from github_client import GitHubClient
+from poke_client import PokeClient
+from webhook_handlers import WebhookHandlers
 
 # Load environment variables
 load_dotenv()
