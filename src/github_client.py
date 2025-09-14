@@ -240,7 +240,7 @@ class GitHubClient:
         try:
             headers = self._get_headers()
 
-            # Build search query
+            # First, try GitHub's search API
             search_query = f"{query} repo:{owner}/{repo}"
             if extension:
                 search_query += f" extension:{extension}"
@@ -250,7 +250,7 @@ class GitHubClient:
             url = f"{self.base_url}/search/code"
             params = {
                 "q": search_query,
-                "per_page": min(limit, 100),  # GitHub API max is 100 i think
+                "per_page": min(limit, 100),  # GitHub API max is 100
                 "sort": "indexed",
             }
 
@@ -258,32 +258,132 @@ class GitHubClient:
 
             if response.status_code == 200:
                 data = response.json()
-                results = []
+                total_count = data.get("total_count", 0)
 
-                for item in data.get("items", []):
-                    results.append(
-                        {
-                            "file_path": item.get("path", ""),
-                            "file_url": item.get("html_url", ""),
-                            "repository": item.get("repository", {}).get(
-                                "full_name", f"{owner}/{repo}"
-                            ),
-                            "score": item.get("score", 0),
-                        }
-                    )
+                # If search API has results, use them
+                if total_count > 0:
+                    results = []
+                    for item in data.get("items", []):
+                        results.append(
+                            {
+                                "file_path": item.get("path", ""),
+                                "file_url": item.get("html_url", ""),
+                                "repository": item.get("repository", {}).get(
+                                    "full_name", f"{owner}/{repo}"
+                                ),
+                                "score": item.get("score", 0),
+                            }
+                        )
 
-                return {
-                    "success": True,
-                    "total_count": data.get("total_count", 0),
-                    "results": results,
-                }
+                    return {
+                        "success": True,
+                        "total_count": total_count,
+                        "results": results,
+                    }
+
+                # If search API returns 0 results, fall back to contents API
+                print(f"Search API returned 0 results, falling back to contents API...")
+                return self._search_code_via_contents(owner, repo, query, extension, path, limit)
             else:
-                return {
-                    "success": False,
-                    "error": f"Failed to search code: {response.status_code} - {response.text}",
-                }
+                # If search API fails, fall back to contents API
+                print(f"Search API failed with {response.status_code}, falling back to contents API...")
+                return self._search_code_via_contents(owner, repo, query, extension, path, limit)
+
         except Exception as e:
             return {"success": False, "error": f"Exception: {str(e)}"}
+
+    def _search_code_via_contents(
+        self,
+        owner: str,
+        repo: str,
+        query: str,
+        extension: Optional[str] = None,
+        path: Optional[str] = None,
+        limit: int = 10,
+    ) -> Dict[str, Any]:
+        """Fallback search using Contents API and local file content search"""
+        try:
+            import re
+            import base64
+
+            results = []
+            search_pattern = re.compile(re.escape(query), re.IGNORECASE)
+
+            # Get all files from the repository
+            all_files = self._get_all_repository_files(owner, repo, path)
+
+            # Filter by extension if specified
+            if extension:
+                ext_filter = f".{extension}" if not extension.startswith('.') else extension
+                all_files = [f for f in all_files if f.endswith(ext_filter)]
+
+            files_searched = 0
+            matches_found = 0
+
+            for file_path in all_files[:100]:  # Limit to avoid API rate limits
+                if len(results) >= limit:
+                    break
+
+                files_searched += 1
+
+                # Get file content
+                file_content_result = self.get_file_content(owner, repo, file_path)
+                if file_content_result.get('success') and file_content_result.get('content'):
+                    content = file_content_result.get('content', '')
+
+                    # Search for query in content
+                    if search_pattern.search(content):
+                        matches_found += 1
+                        results.append({
+                            "file_path": file_path,
+                            "file_url": f"https://github.com/{owner}/{repo}/blob/main/{file_path}",
+                            "repository": f"{owner}/{repo}",
+                            "score": 1.0,  # Simple scoring
+                            "search_method": "contents_api",
+                        })
+
+            return {
+                "success": True,
+                "total_count": matches_found,
+                "results": results,
+                "search_info": {
+                    "method": "contents_api",
+                    "files_searched": files_searched,
+                    "matches_found": matches_found,
+                    "note": "Repository not indexed by GitHub search, used Contents API fallback"
+                }
+            }
+
+        except Exception as e:
+            return {"success": False, "error": f"Contents API fallback failed: {str(e)}"}
+
+    def _get_all_repository_files(self, owner: str, repo: str, path_filter: Optional[str] = None) -> list:
+        """Recursively get all file paths from repository"""
+        try:
+            files = []
+            headers = self._get_headers()
+
+            def get_contents_recursive(path=""):
+                url = f"{self.base_url}/repos/{owner}/{repo}/contents/{path}"
+                response = requests.get(url, headers=headers)
+
+                if response.status_code == 200:
+                    items = response.json()
+                    if isinstance(items, list):
+                        for item in items:
+                            if item.get("type") == "file":
+                                file_path = item.get("path", "")
+                                if not path_filter or path_filter in file_path:
+                                    files.append(file_path)
+                            elif item.get("type") == "dir":
+                                get_contents_recursive(item.get("path", ""))
+
+            get_contents_recursive()
+            return files
+
+        except Exception as e:
+            print(f"Error getting repository files: {e}")
+            return []
 
     def get_file_content(
         self, owner: str, repo: str, file_path: str, ref: Optional[str] = None
