@@ -25,6 +25,25 @@ You can connect your deployed MCP server to Poke at [poke.com/settings/connectio
 To test the MCP connection, ask Poke something like:
 `"Tell the subagent to use the 'GitHub-Poke Bridge' integration's 'test_poke_message' tool"`
 
+## Setting Up Notification Preferences
+
+Once your GitHub webhooks are configured and events are flowing to Poke, you should tell Poke about your notification preferences:
+
+**Example conversation with Poke:**
+```
+"Hey, I've set up GitHub notifications through my MCP server. Here's how I want you to handle them:
+
+- Only notify me about PRs that are opened or merged
+- Alert me immediately for any issues labeled 'bug' or 'critical'
+- For commits, only tell me about pushes to main branch with more than 5 files changed
+- Branch creation/deletion is usually not important unless it's a release branch
+- Feel free to batch minor updates and summarize them once per hour
+
+Can you remember these preferences for future GitHub notifications?"
+```
+
+This helps Poke learn what's important to you and avoid notification fatigue.
+
 ## Local Development
 
 ### Setup
