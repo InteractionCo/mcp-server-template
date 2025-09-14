@@ -3,7 +3,7 @@ services:
     name: github-poke-bridge
     runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: python src/server.py
+    startCommand: python -m src.server
     plan: free
     autoDeploy: false
     envVars:
