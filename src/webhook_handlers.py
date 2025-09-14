@@ -5,8 +5,8 @@ GitHub webhook event handlers for processing different event types.
 import os
 from typing import Dict, Any
 
-from .github_client import GitHubClient
-from .poke_client import PokeClient
+from github_client import GitHubClient
+from poke_client import PokeClient
 
 
 class WebhookHandlers:
