@@ -123,6 +123,25 @@ def get_github_api_headers():
         "User-Agent": "GitHub-Poke-Bridge"
     }
 
+# Fetches diff content for a commit from GitHub API
+def get_commit_diff(owner: str, repo: str, commit_sha: str) -> str:
+    """
+    Fetches the actual diff content (code changes) for a commit.
+    Returns the diff as a string, or empty string if unavailable.
+    """
+    try:
+        headers = get_github_api_headers()
+        headers["Accept"] = "application/vnd.github.diff"  # Request diff format
+        url = f"https://api.github.com/repos/{owner}/{repo}/commits/{commit_sha}"
+
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            return response.text[:1500] + "..." if len(response.text) > 1500 else response.text  # Truncate long diffs
+    except Exception as e:
+        print(f"Failed to fetch commit diff: {e}")
+
+    return ""
+
 # Fetches detailed commit info from GitHub API (files changed, stats, etc.)
 def enrich_commit_data(owner: str, repo: str, commit_sha: str) -> dict:
     """Fetch detailed commit information from GitHub API"""
@@ -230,14 +249,23 @@ async def github_webhook(request: Request) -> JSONResponse:
                 commit_details = enrich_commit_data(repo_owner, repo_name, commit_sha)
 
                 if commit_details:
+                    # Check if we should include diff content
+                    include_diff = os.environ.get("INCLUDE_DIFF_CONTENT", "false").lower() == "true"
+
                     message = f"""🚀 {commit_count} new commit{'s' if commit_count != 1 else ''} pushed to {repo_name} by {pusher}
 
 Latest commit: {commit_details.get('message', 'No message')}
 Author: {commit_details.get('author', pusher)}
 Files changed: {commit_details.get('files_changed', 0)} (+{commit_details.get('additions', 0)} -{commit_details.get('deletions', 0)})
-Modified files: {', '.join(commit_details.get('files', []))}
+Modified files: {', '.join(commit_details.get('files', []))}"""
 
-View commit: {commit_details.get('url', '')}"""
+                    # Add diff content if enabled
+                    if include_diff:
+                        diff_content = get_commit_diff(repo_owner, repo_name, commit_sha)
+                        if diff_content:
+                            message += f"\n\nChanges:\n```\n{diff_content}\n```"
+
+                    message += f"\n\nView commit: {commit_details.get('url', '')}"
                 else:
                     message = f"🚀 {commit_count} new commit{'s' if commit_count != 1 else ''} pushed to {repo_name} by {pusher}"
             else:
@@ -294,6 +322,45 @@ Comments: {issue_details.get('comments', 0)}
 View issue: {issue_details.get('url', '')}"""
             else:
                 message = f"🐛 Issue #{issue_number} {action} in {repo_name} by {issue_user}: {issue_title}"
+
+        elif event_type == "create":
+            # Handle branch/tag creation
+            ref_type = payload.get("ref_type", "unknown")
+            ref_name = payload.get("ref", "unknown")
+            creator = payload.get("sender", {}).get("login", "someone")
+
+            if ref_type == "branch":
+                # Try to get the base branch (usually 'main' for new branches)
+                default_branch = payload.get("repository", {}).get("default_branch", "main")
+                message = f"""🌿 New branch '{ref_name}' created in {repo_name} by {creator}
+
+Branch: {ref_name}
+Branched from: {default_branch} (likely)
+Repository: {repo_name}
+
+View branch: https://github.com/{repo_owner}/{repo_name}/tree/{ref_name}"""
+
+            elif ref_type == "tag":
+                message = f"""🏷️ New tag '{ref_name}' created in {repo_name} by {creator}
+
+Tag: {ref_name}
+Repository: {repo_name}
+
+View tag: https://github.com/{repo_owner}/{repo_name}/releases/tag/{ref_name}"""
+
+            else:
+                message = f"📫 New {ref_type} '{ref_name}' created in {repo_name} by {creator}"
+
+        elif event_type == "delete":
+            # Handle branch/tag deletion
+            ref_type = payload.get("ref_type", "unknown")
+            ref_name = payload.get("ref", "unknown")
+            deleter = payload.get("sender", {}).get("login", "someone")
+
+            message = f"""🗑️ {ref_type.title()} '{ref_name}' deleted from {repo_name} by {deleter}
+
+Deleted {ref_type}: {ref_name}
+Repository: {repo_name}"""
 
         else:
             message = f"📫 GitHub {event_type} event in {repo_name}"
