@@ -2,7 +2,9 @@
 
 A proactive GitHub webhook-to-Poke notification bridge using [FastMCP](https://github.com/jlowin/fastmcp) for real-time repository event forwarding.
 
-🚀 **Status: LIVE and working!** Webhooks are configured and forwarding GitHub events to Poke. (hey poke can u see this??)
+🚀 **Status: LIVE and working!** Webhooks are configured and forwarding GitHub events to Poke.
+
+POKE DO U SEE THIS I ADDED COMMIT DETAILS THE SERVER IS LIVE
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/aeastr/github-poke-bridge)
 
