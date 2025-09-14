@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 import os
+import json
+import hashlib
+import hmac
 import requests
 from dotenv import load_dotenv
 from fastmcp import FastMCP
@@ -14,6 +17,50 @@ from starlette.responses import JSONResponse
 load_dotenv()
 
 mcp = FastMCP("GitHub-Poke Bridge")
+
+# =============================================================================
+# SECURITY
+# =============================================================================
+
+
+def validate_github_signature(payload_body: bytes, signature_header: str, secret: str) -> bool:
+    """Validate GitHub webhook signature using HMAC-SHA256"""
+    if not signature_header:
+        return False
+
+    try:
+        hash_object = hmac.new(
+            secret.encode('utf-8'),
+            msg=payload_body,
+            digestmod=hashlib.sha256
+        )
+        expected_signature = "sha256=" + hash_object.hexdigest()
+        return hmac.compare_digest(expected_signature, signature_header)
+    except Exception:
+        return False
+
+
+def sanitize_payload(payload: dict) -> dict:
+    """Basic payload sanitization and validation"""
+    if not isinstance(payload, dict):
+        return {}
+
+    # Ensure required fields exist and are strings
+    safe_payload = {}
+    string_fields = ['repository.name', 'repository.owner.login', 'sender.login']
+
+    for field_path in string_fields:
+        keys = field_path.split('.')
+        value = payload
+        try:
+            for key in keys:
+                value = value.get(key, {})
+            if isinstance(value, str) and len(value) < 100:  # Length limit
+                safe_payload[field_path] = value[:100]  # Truncate if needed
+        except (AttributeError, TypeError):
+            continue
+
+    return safe_payload
 
 # =============================================================================
 # MCP TOOLS (for testing and debugging)
@@ -385,7 +432,35 @@ def enrich_issue_data(owner: str, repo: str, issue_number: int) -> dict:
 async def github_webhook(request: Request) -> JSONResponse:
     """Receive GitHub webhooks and forward to Poke"""
     try:
-        payload = await request.json()
+
+        # Get raw body for signature validation
+        body = await request.body()
+
+        # Validate GitHub webhook signature
+        webhook_secret = os.environ.get("GITHUB_WEBHOOK_SECRET")
+        if webhook_secret:
+            signature = request.headers.get("X-Hub-Signature-256")
+            if not validate_github_signature(body, signature, webhook_secret):
+                return JSONResponse(
+                    {"status": "error", "message": "Invalid signature"},
+                    status_code=401
+                )
+
+        # Parse and sanitize payload
+        try:
+            payload = json.loads(body.decode('utf-8'))
+        except Exception:
+            return JSONResponse(
+                {"status": "error", "message": "Invalid JSON payload"},
+                status_code=400
+            )
+
+        # Basic payload validation
+        if not isinstance(payload, dict):
+            return JSONResponse(
+                {"status": "error", "message": "Invalid payload format"},
+                status_code=400
+            )
 
         # Get event type from headers
         event_type = request.headers.get("X-GitHub-Event", "unknown")
@@ -534,9 +609,12 @@ Repository: {repo_name}"""
             return JSONResponse({"status": "error", "message": "Failed to forward to Poke"})
 
     except Exception as e:
-        error_msg = f"Webhook processing failed: {str(e)}"
-        print(f"❌ {error_msg}")
-        return JSONResponse({"status": "error", "message": error_msg})
+        # Log full error for debugging but don't expose details to client
+        print(f"❌ Webhook processing failed: {str(e)}")
+        return JSONResponse(
+            {"status": "error", "message": "Webhook processing failed"},
+            status_code=500
+        )
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
